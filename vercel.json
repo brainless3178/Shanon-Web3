@@ -1,22 +1,4 @@
 {
     "version": 2,
-    "functions": {
-        "api/*.js": {
-            "runtime": "vercel-node@latest"
-        }
-    },
-    "rewrites": [
-        {
-            "source": "/api/programs",
-            "destination": "/api/programs.js"
-        },
-        {
-            "source": "/api/findings",
-            "destination": "/api/findings.js"
-        },
-        {
-            "source": "/api/status",
-            "destination": "/api/status.js"
-        }
-    ]
+    "public": true
 }
