@@ -67,7 +67,7 @@ A single Rust binary — **36 specialized crates** — that runs a full security
 
 ---
 
-## 🔗 Built on Solana
+## Built on Solana
 
 > This section is for hackathon judges. Shanon-Web3 doesn't just *analyze* Solana programs — it **builds on Solana** with an on-chain audit registry.
 
@@ -107,7 +107,7 @@ pub struct ExploitProfile {
 solana-security-swarm audit --repo ./my-program --register
 ```
 
-> ⚠️ All on-chain operations use **Solana devnet**. The developer has no mainnet SOL. This is a hackathon prototype — mainnet deployment is a future milestone.
+> [Important] All on-chain operations use **Solana devnet**. The developer has no mainnet SOL. This is a hackathon prototype — mainnet deployment is a future milestone.
 
 ---
 
@@ -120,8 +120,12 @@ cargo build --release
 # Audit a local Anchor project
 cargo run --release --bin solana-security-swarm -- audit --repo ./programs/vulnerable-vault
 
-# Scan a GitHub repo directly
-cargo run --release --bin solana-security-swarm -- scan https://github.com/user/solana-program
+# Setup environment for AI features
+cp .env.example .env
+# Edit .env and add your OPENROUTER_API_KEY
+
+# Setup TypeScript environment for exploits and tests
+npm install
 
 # Interactive mode (guided walkthrough)
 cargo run --release --bin solana-security-swarm -- interactive
@@ -304,9 +308,23 @@ programs/                          On-chain Solana programs
 |---|---|---|
 | Rust | 1.75+ | Edition 2021 |
 | Solana CLI | 1.18+ | For on-chain registry interaction |
-| Z3 (optional) | any | `apt install libz3-dev` / `brew install z3` — only needed for `--prove` |
+| Node.js | 20+ | Required for running PoC exploits and integration tests |
+| Z3 (optional) | any | Required for formal proof generation (`--prove`) |
+| Honggfuzz (optional) | any | Required for SBF bytecode fuzzing |
 
-Without Z3 installed, all 52 detectors, taint analysis, fuzzing, and AI enhancement still work. You only lose formal proof generation.
+### OS Dependencies
+
+- Linux: `apt install libz3-dev libssl-dev pkg-config libclang-dev`
+- macOS: `brew install z3 openssl`
+
+Without Z3 or Honggfuzz installed, all 52 detectors, taint analysis, and AI enhancement still work. You only lose formal proof and deep bytecode fuzzing.
+
+### Environment Setup
+
+The AI-powered consensus and exploit synthesis require API keys.
+
+1. `cp .env.example .env`
+2. Define `OPENROUTER_API_KEY` or `OPENAI_API_KEY` in the file.
 
 ---
 
