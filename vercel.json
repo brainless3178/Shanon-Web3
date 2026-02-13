@@ -45,6 +45,14 @@
         {
             "source": "/api/hello",
             "destination": "/api/hello.js"
+        },
+        {
+            "source": "/",
+            "destination": "/dashboard/index.html"
+        },
+        {
+            "source": "/dashboard",
+            "destination": "/dashboard/index.html"
         }
     ]
 }

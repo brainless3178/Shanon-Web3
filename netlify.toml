@@ -1,5 +1,5 @@
 [build]
-  publish = "."
+  publish = "dashboard"
 
 [[redirects]]
   from = "/api/*"
