@@ -458,76 +458,13 @@
         });
         html += C.card({ title: 'Taint Sinks (from API)', subtitle: 'Where tainted data is consumed', body: '<div style="display:grid;gap:8px;">' + sinkCards.join('') + '</div>' });
       } else {
-        var sources = [
-          { title: 'account_info.data', icon: 'database', status: 'fail', value: 'Unvalidated input' },
-          { title: 'ix_data[0..8]', icon: 'code', status: 'fail', value: 'Raw instruction data' },
-          { title: 'oracle.price', icon: 'activity', status: 'fail', value: 'External price feed' },
-          { title: 'clock.unix_timestamp', icon: 'clock', status: 'warn', value: 'Manipulable sysvar' },
-          { title: 'token_account.amount', icon: 'layers', status: 'pass', value: 'Validated via CPI' }
-        ];
-        html += C.card({ title: 'Taint Sources', subtitle: 'Origins of untrusted data', body: '<div style="display:grid;gap:8px;">' + sources.map(function (s) { return C.miniCard(s); }).join('') + '</div>' });
-
-        var sinks = [
-          { title: 'transfer CPI amount', icon: 'arrowRight', status: 'fail', value: 'Tainted value reaches SOL transfer' },
-          { title: 'PDA seed derivation', icon: 'hash', status: 'fail', value: 'Tainted seed in find_program_address' },
-          { title: 'authority check', icon: 'lock', status: 'warn', value: 'Partially sanitized' },
-          { title: 'emit! event data', icon: 'bell', status: 'pass', value: 'Non-critical sink' }
-        ];
-        html += C.card({ title: 'Taint Sinks', subtitle: 'Where tainted data is consumed', body: '<div style="display:grid;gap:8px;">' + sinks.map(function (s) { return C.miniCard(s); }).join('') + '</div>' });
-      }
-      html += '</div>';
-
-      if (flows && flows.length) {
-        var ruleLines = flows.map(function (f) {
-          return f.id + ': ' + f.source + ' → ' + f.sink + '  [' + f.severity + ' — ' + f.taint_type + ']';
-        });
-        ruleLines.push('', 'Analysis complete: ' + criticalFlows + ' critical flow(s), ' + totalFlows + ' total');
-        html += C.card({ title: 'Taint Flow Details', body: C.codeOutput(ruleLines) });
-      } else {
-        html += C.card({
-          title: 'Propagation Rules Applied', body: C.codeOutput([
-            'Rule 1: account_info.data -> deserialized_field  [TAINT PROPAGATES]',
-            'Rule 2: tainted_amount * constant -> result       [TAINT PROPAGATES]',
-            'Rule 3: if checked_add(tainted) -> sanitized      [TAINT CLEARED]',
-            'Rule 4: tainted_key == expected_key -> validated   [TAINT CLEARED]',
-            'Rule 5: CPI invoke_signed(tainted_seeds)           [TAINT SINK - CRITICAL]',
-            'Rule 6: msg!("log: {}", tainted_value)             [TAINT SINK - INFO]',
-            '',
-            'Analysis complete: 3 unsafe paths detected, 2 sanitized, 1 info-only'
-          ])
-        });
-      }
-
-      pageEl.innerHTML = html;
-
-      var graphNodes, graphEdges;
-      if (flows && flows.length) {
-        var nodeSet = {}; var nodes = []; var edges = [];
-        flows.forEach(function (f, i) {
-          var srcId = 'src' + i; var sinkId = 'sink' + i;
-          if (!nodeSet[f.source]) { nodeSet[f.source] = srcId; nodes.push({ id: srcId, label: f.source.split('(')[0].trim(), type: 'source' }); }
-          if (!nodeSet[f.sink]) { nodeSet[f.sink] = sinkId; nodes.push({ id: sinkId, label: f.sink.split('(')[0].trim(), type: 'sink' }); }
-          f.path.forEach(function (step, si) {
-            var pid = 'proc' + i + '_' + si;
-            if (!nodeSet[step]) { nodeSet[step] = pid; nodes.push({ id: pid, label: step, type: 'process' }); }
-          });
-          var prevId = nodeSet[f.source];
-          f.path.forEach(function (step) { edges.push({ from: prevId, to: nodeSet[step], label: '' }); prevId = nodeSet[step]; });
-          edges.push({ from: prevId, to: nodeSet[f.sink], label: f.severity });
-        });
-        graphNodes = nodes; graphEdges = edges;
-      } else {
-        graphNodes = [
-          { id: 'src1', label: 'account_info.data', type: 'source', tainted: true }, { id: 'src2', label: 'ix_data', type: 'source', tainted: true }, { id: 'src3', label: 'oracle.price', type: 'source', tainted: true },
-          { id: 'proc1', label: 'deserialize()', type: 'process' }, { id: 'proc2', label: 'calculate_fee()', type: 'process' }, { id: 'proc3', label: 'derive_pda()', type: 'process' },
-          { id: 'sink1', label: 'transfer CPI', type: 'sink', tainted: true }, { id: 'sink2', label: 'PDA seeds', type: 'sink', tainted: true }, { id: 'sink3', label: 'authority', type: 'sink' }
-        ];
-        graphEdges = [
-          { from: 'src1', to: 'proc1', label: 'raw bytes', tainted: true }, { from: 'src2', to: 'proc1', label: 'instruction', tainted: true },
-          { from: 'proc1', to: 'proc2', label: 'amount', tainted: true }, { from: 'src3', to: 'proc2', label: 'price', tainted: true },
-          { from: 'proc2', to: 'sink1', label: 'transfer_amt', tainted: true }, { from: 'proc1', to: 'proc3', label: 'seed_data', tainted: true },
-          { from: 'proc3', to: 'sink2', label: 'pda_key', tainted: true }, { from: 'proc1', to: 'sink3', label: 'auth_key' }
-        ];
+        html += '<div style="padding:100px 40px; text-align:center; border:2px dashed var(--border-subtle); border-radius:12px; margin-top:24px;">' +
+          '<div style="font-size:3rem; margin-bottom:20px;">🔬</div>' +
+          '<h3 style="color:var(--text-primary); margin-bottom:8px;">No Taint Data Available</h3>' +
+          '<p style="color:var(--text-muted); max-width:400px; margin:0 auto;">Connect to the Solana Security Swarm production API on Railway to view data flow and taint propagation analysis.</p>' +
+          '</div>';
+        pageEl.innerHTML = html;
+        return;
       }
       Ch.flowGraph(document.getElementById('taint-flow'), graphNodes, graphEdges, {});
     }
@@ -561,22 +498,32 @@
       C.statCard({ value: uninitReads, label: 'Account Validation Issues', iconName: 'alertTriangle', variant: uninitReads > 0 ? 'critical' : 'accent' })
     ]);
 
-    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:24px;">';
+    if (ALL_FINDINGS.length > 0) {
+      html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:24px;">';
 
-    var deadDefExamples = [
-      ['fn initialize:', '  let mut config = VaultConfig::default();', '  config.fee_rate = 100;  // DEAD: overwritten below', '  config.fee_rate = args.fee_rate;', '  config.authority = ctx.accounts.authority.key();'],
-      ['fn process_swap:', '  let temp_balance = pool.reserve_a;  // DEAD: never read', '  let output = calculate_output(input, pool);'],
-      ['fn claim_rewards:', '  let old_ts = stake.last_claim;  // DEAD: shadowed', '  let old_ts = Clock::get()?.unix_timestamp;']
-    ];
-    html += C.card({ title: I.svg('trash', 16) + ' Dead Definitions', subtitle: deadDefs + ' assignments whose values are never read', body: deadDefExamples.map(function (block) { return C.codeOutput(block); }).join('') });
+      var deadDefExamples = [
+        ['fn initialize:', '  let mut config = VaultConfig::default();', '  config.fee_rate = 100;  // DEAD: overwritten below', '  config.fee_rate = args.fee_rate;', '  config.authority = ctx.accounts.authority.key();'],
+        ['fn process_swap:', '  let temp_balance = pool.reserve_a;  // DEAD: never read', '  let output = calculate_output(input, pool);'],
+        ['fn claim_rewards:', '  let old_ts = stake.last_claim;  // DEAD: shadowed', '  let old_ts = Clock::get()?.unix_timestamp;']
+      ];
+      html += C.card({ title: I.svg('trash', 16) + ' Dead Definitions', subtitle: deadDefs + ' assignments whose values are never read', body: deadDefExamples.map(function (block) { return C.codeOutput(block); }).join('') });
 
-    var uninitExamples = [
-      ['fn emergency_withdraw:', '  let amount: u64;  // WARNING: uninitialized', '  if condition {', '    amount = vault.balance;', '  }', '  // else branch missing: amount may be uninitialized', '  transfer(amount);  // POTENTIAL USE OF UNINITIALIZED'],
-      ['fn update_oracle:', '  let price: u64;  // declared but not set on all paths', '  match source {', '    Source::Pyth => { price = pyth.price; }', '    Source::Switchboard => { /* MISSING: price not set */ }', '  }', '  state.price = price;  // POTENTIAL UNINIT READ']
-    ];
-    html += C.card({ title: I.svg('alertTriangle', 16) + ' Uninitialized Reads', subtitle: uninitReads + ' potential uses of uninitialized variables', body: uninitExamples.map(function (block) { return C.codeOutput(block); }).join('') });
+      var uninitExamples = [
+        ['fn emergency_withdraw:', '  let amount: u64;  // WARNING: uninitialized', '  if condition {', '    amount = vault.balance;', '  }', '  // else branch missing: amount may be uninitialized', '  transfer(amount);  // POTENTIAL USE OF UNINITIALIZED'],
+        ['fn update_oracle:', '  let price: u64;  // declared but not set on all paths', '  match source {', '    Source::Pyth => { price = pyth.price; }', '    Source::Switchboard => { /* MISSING: price not set */ }', '  }', '  state.price = price;  // POTENTIAL UNINIT READ']
+      ];
+      html += C.card({ title: I.svg('alertTriangle', 16) + ' Uninitialized Reads', subtitle: uninitReads + ' potential uses of uninitialized variables', body: uninitExamples.map(function (block) { return C.codeOutput(block); }).join('') });
 
-    html += '</div>';
+      html += '</div>';
+    } else {
+      html += '<div style="padding:100px 40px; text-align:center; border:2px dashed var(--border-subtle); border-radius:12px; margin-top:24px;">' +
+        '<div style="font-size:3rem; margin-bottom:20px;">🛡️</div>' +
+        '<h3 style="color:var(--text-primary); margin-bottom:8px;">No Dataflow Information</h3>' +
+        '<p style="color:var(--text-muted); max-width:400px; margin:0 auto;">Use-definition chains and dead code analysis require a live production core. Connect to Railway to analyze program dataflow.</p>' +
+        '</div>';
+      pageEl.innerHTML = html;
+      return;
+    }
 
     html += C.card({ title: 'Dataflow Coverage', body: '<div id="dataflow-coverage" style="padding:16px;"></div>' });
 
@@ -646,41 +593,13 @@
           html += '<div style="margin-top:24px;"></div>';
         });
       } else {
-        var z3Props = [
-          { name: 'overflow_free(calculate_fee)', status: 'proven', engine: 'Z3', time: '0.34s' },
-          { name: 'k_invariant(swap)', status: 'violated', engine: 'Z3', time: '1.2s' },
-          { name: 'authority_check(withdraw)', status: 'violated', engine: 'Z3', time: '0.18s' },
-          { name: 'balance_conservation(transfer)', status: 'proven', engine: 'Z3', time: '0.89s' },
-          { name: 'no_reentrancy(process)', status: 'proven', engine: 'Z3', time: '2.1s' },
-          { name: 'oracle_bounded(get_price)', status: 'violated', engine: 'Z3', time: '0.56s' },
-          { name: 'deadline_enforced(swap)', status: 'proven', engine: 'Z3', time: '0.22s' },
-          { name: 'slippage_check(swap)', status: 'violated', engine: 'Z3', time: '0.45s' }
-        ];
-        var kaniProps = [
-          { name: 'no_panic(calculate_fee)', status: 'proven', engine: 'Kani', time: '4.5s' },
-          { name: 'no_panic(distribute_rewards)', status: 'proven', engine: 'Kani', time: '3.8s' },
-          { name: 'memory_safe(deserialize)', status: 'proven', engine: 'Kani', time: '6.2s' },
-          { name: 'bounds_valid(pool_operations)', status: 'proven', engine: 'Kani', time: '5.1s' },
-          { name: 'no_overflow(apy_calculation)', status: 'unknown', engine: 'Kani', time: 'TIMEOUT' },
-          { name: 'termination(reward_loop)', status: 'proven', engine: 'Kani', time: '2.3s' }
-        ];
-        var certoraProps = [
-          { name: 'total_supply_invariant', status: 'proven', engine: 'Certora', time: '12.4s' },
-          { name: 'mint_authority_exclusive', status: 'proven', engine: 'Certora', time: '8.7s' },
-          { name: 'freeze_compliance', status: 'proven', engine: 'Certora', time: '15.2s' },
-          { name: 'transfer_conservation', status: 'proven', engine: 'Certora', time: '9.8s' },
-          { name: 'pda_uniqueness', status: 'unknown', engine: 'Certora', time: 'TIMEOUT' },
-          { name: 'close_account_safety', status: 'proven', engine: 'Certora', time: '7.3s' },
-          { name: 'reward_monotonicity', status: 'proven', engine: 'Certora', time: '11.5s' },
-          { name: 'stake_cooldown_enforcement', status: 'proven', engine: 'Certora', time: '6.9s' },
-          { name: 'no_double_claim', status: 'proven', engine: 'Certora', time: '10.1s' },
-          { name: 'authority_immutable', status: 'proven', engine: 'Certora', time: '5.4s' }
-        ];
-        html += propTable('Z3 Symbolic Engine', 'brain', z3Props);
-        html += '<div style="margin-top:24px;"></div>';
-        html += propTable('Kani Model Checker', 'cpu', kaniProps);
-        html += '<div style="margin-top:24px;"></div>';
-        html += propTable('Certora Prover', 'verification', certoraProps);
+        html += '<div style="padding:100px 40px; text-align:center; border:2px dashed var(--border-subtle); border-radius:12px; margin-top:24px;">' +
+          '<div style="font-size:3rem; margin-bottom:20px;">🛡️</div>' +
+          '<h3 style="color:var(--text-primary); margin-bottom:8px;">Formal Verification Unavailable</h3>' +
+          '<p style="color:var(--text-muted); max-width:400px; margin:0 auto;">Model checking with Z3, Kani, and Certora Prover requires the high-performance formal engine on the backend. No active results found.</p>' +
+          '</div>';
+        pageEl.innerHTML = html;
+        return;
       }
 
       pageEl.innerHTML = html;
@@ -733,23 +652,13 @@
           };
         });
       } else {
-        fuzzers = [
-          {
-            name: 'Security Fuzzer', icon: 'shield', coverage: 87.3, cases: 5420, crashes: 3, corpus: 156, duration: '2m 34s',
-            mutations: ['bit-flip', 'byte-swap', 'arithmetic', 'havoc', 'splice'],
-            crashes_detail: ['CRASH-001: Panic at calculate_fee() - overflow on u64::MAX input', 'CRASH-002: Panic at deserialize() - buffer underflow on truncated data', 'CRASH-003: Panic at distribute_rewards() - division by zero when total_staked=0']
-          },
-          {
-            name: 'Trident Fuzzer', icon: 'zap', coverage: 72.1, cases: 4200, crashes: 2, corpus: 98, duration: '3m 12s',
-            mutations: ['account-swap', 'amount-boundary', 'authority-forge', 'signer-skip'],
-            crashes_detail: ['CRASH-004: Account constraint violation in transfer_stake with duplicate accounts', 'CRASH-005: Missing signer check bypass in unstake instruction']
-          },
-          {
-            name: 'FuzzDelSol', icon: 'cpu', coverage: 64.8, cases: 3227, crashes: 2, corpus: 88, duration: '4m 48s',
-            mutations: ['bytecode-mutate', 'instruction-reorder', 'account-type-swap'],
-            crashes_detail: ['CRASH-006: Type cosplay - passing Mint account where Vault expected', 'CRASH-007: CPI authority escalation via crafted PDA seeds']
-          }
-        ];
+        html += '<div style="padding:100px 40px; text-align:center; border:2px dashed var(--border-subtle); border-radius:12px; margin-top:24px;">' +
+          '<div style="font-size:3rem; margin-bottom:20px;">💥</div>' +
+          '<h3 style="color:var(--text-primary); margin-bottom:8px;">No Fuzzing Campaigns Found</h3>' +
+          '<p style="color:var(--text-muted); max-width:400px; margin:0 auto;">Trident and FuzzDelSol campaigns only run on an active backend. Deploy the security-swarm engine to start fuzzing instructions.</p>' +
+          '</div>';
+        pageEl.innerHTML = html;
+        return;
       }
 
       fuzzers.forEach(function (fz, idx) {
