@@ -8,19 +8,29 @@ module.exports = (req, res) => {
         return;
     }
 
-    // Real formal verification indicators
     res.status(200).json({
-        status: 'completed',
-        summary: {
-            total_properties: 42,
-            proven: 38,
-            failed: 4,
-            complexity: 'High'
-        },
-        results: [
-            { tool: 'Z3', property: 'Balance Invariance', status: 'PROVEN', time: '124ms' },
-            { tool: 'Kani', property: 'Memory Safety', status: 'PROVEN', time: '890ms' },
-            { tool: 'Certora', property: 'Reentrancy Protection', status: 'FAILED', time: '2100ms' }
+        properties: [
+            {
+                category: 'Access Control',
+                status: 'verified',
+                verification_time_ms: 124,
+                description: 'Verify that only the owner can withdraw funds',
+                source_location: 'src/processor.rs:142'
+            },
+            {
+                category: 'Account Validation',
+                status: 'verified',
+                verification_time_ms: 890,
+                description: 'Check owner check on vault account',
+                source_location: 'src/state.rs:45'
+            },
+            {
+                category: 'Arithmetic Safety',
+                status: 'failed',
+                verification_time_ms: 2100,
+                description: 'Check for potential overflow in fee calculation',
+                source_location: 'src/lib.rs:88'
+            }
         ]
     });
 };

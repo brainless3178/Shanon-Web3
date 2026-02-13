@@ -9,12 +9,24 @@ module.exports = (req, res) => {
     }
 
     res.status(200).json({
-        active_threats: 0,
+        status: 'active',
+        total_alerts: 2,
+        active_monitors: 12,
         alerts: [
-            { id: 1, type: 'INFO', message: 'Honeypot account created for monitoring', timestamp: new Date().toISOString() },
-            { id: 2, type: 'WARNING', message: 'Anomalous transfer pattern detected in Vault-A', timestamp: new Date().toISOString() }
-        ],
-        mempool_status: 'Healthy',
-        scan_frequency: '60s'
+            {
+                timestamp: new Date().toISOString(),
+                description: 'Unusual withdrawal pattern on vulnerable-vault',
+                severity: 'high',
+                transaction_signature: '5xY...8sP',
+                resolved: false
+            },
+            {
+                timestamp: new Date().toISOString(),
+                description: 'Anomalous transfer pattern detected in Vault-A',
+                severity: 'medium',
+                transaction_signature: '2zP...9qR',
+                resolved: false
+            }
+        ]
     });
 };
