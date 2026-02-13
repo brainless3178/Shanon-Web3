@@ -29,3 +29,7 @@ audit_reports/v2_report.json
 **/*.mdx
 !/README.md
 **/audit_reports/*.json
+
+# Local Netlify folder
+.netlify
+.netlify
