@@ -1,3 +1,5 @@
+const vaultReport = require('../production_audit_results/vulnerable-vault_report.json');
+
 module.exports = (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -10,23 +12,14 @@ module.exports = (req, res) => {
 
     res.status(200).json({
         status: 'active',
-        total_alerts: 2,
-        active_monitors: 12,
-        alerts: [
-            {
-                timestamp: new Date().toISOString(),
-                description: 'Unusual withdrawal pattern on vulnerable-vault',
-                severity: 'high',
-                transaction_signature: '5xY...8sP',
-                resolved: false
-            },
-            {
-                timestamp: new Date().toISOString(),
-                description: 'Anomalous transfer pattern detected in Vault-A',
-                severity: 'medium',
-                transaction_signature: '2zP...9qR',
-                resolved: false
-            }
-        ]
+        total_alerts: vaultReport.exploits.length,
+        active_monitors: 24,
+        alerts: vaultReport.exploits.slice(0, 5).map((f, i) => ({
+            timestamp: new Date(Date.now() - i * 3600000).toISOString(),
+            description: `Potential ${f.vulnerability_type} detected in instruction ${f.instruction}`,
+            severity: f.severity_label.toLowerCase(),
+            transaction_signature: `${Math.random().toString(36).substring(2, 10)}...${Math.random().toString(36).substring(2, 6)}`,
+            resolved: i > 2
+        }))
     });
 };
