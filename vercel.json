@@ -1,4 +1,43 @@
 {
     "version": 2,
-    "public": true
+    "public": true,
+    "cleanUrls": true,
+    "rewrites": [
+        {
+            "source": "/api/programs",
+            "destination": "/api/programs.js"
+        },
+        {
+            "source": "/api/findings",
+            "destination": "/api/findings.js"
+        },
+        {
+            "source": "/api/status",
+            "destination": "/api/status.js"
+        },
+        {
+            "source": "/api/warroom/analyze",
+            "destination": "/api/warroom/analyze.js"
+        },
+        {
+            "source": "/api/hello",
+            "destination": "/api/hello.js"
+        },
+        {
+            "source": "/",
+            "destination": "/dashboard/index.html"
+        },
+        {
+            "source": "/index.html",
+            "destination": "/dashboard/index.html"
+        },
+        {
+            "source": "/css/(.*)",
+            "destination": "/dashboard/css/$1"
+        },
+        {
+            "source": "/js/(.*)",
+            "destination": "/dashboard/js/$1"
+        }
+    ]
 }

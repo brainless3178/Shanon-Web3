@@ -1,0 +1,23 @@
+{
+  "program_id": "8N8t8PJSZeR9ZLH1Fk7wEKkTxXfQqzz4jtgjwrKKKnNS",
+  "total_exploits": 5,
+  "critical_count": 1,
+  "high_count": 2,
+  "medium_count": 2,
+  "security_score": 70,
+  "exploits": [
+    {
+      "id": "VULN-15",
+      "category": "Arithmetic",
+      "vulnerability_type": "Precision Loss in Rewards",
+      "severity": 4,
+      "severity_label": "HIGH",
+      "instruction": "calculate_rewards",
+      "description": "Division before multiplication leads to significant precision loss in reward calculation.",
+      "attack_scenario": "Users receive fewer rewards than expected over time due to truncation.",
+      "secure_fix": "Multiply before dividing or use higher precision types.",
+      "economic_impact": "Medium: Cumulative reward loss for stakers."
+    }
+  ],
+  "timestamp": "2026-02-09T14:54:32Z"
+}

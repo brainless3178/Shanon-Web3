@@ -1,0 +1,35 @@
+{
+  "program_id": "6N8t8PJSZeR9ZLH1Fk7wEKkTxXfQqzz4jtgjwrKKKnNU",
+  "total_exploits": 9,
+  "critical_count": 2,
+  "high_count": 2,
+  "medium_count": 5,
+  "security_score": 82,
+  "exploits": [
+    {
+      "id": "VULN-01",
+      "category": "Auth & Auth",
+      "vulnerability_type": "Initialization Frontrunning",
+      "severity": 4,
+      "severity_label": "HIGH",
+      "instruction": "initialize",
+      "description": "Attackers can intercept the initialization transaction to take control of the program authority before the legitimate admin.",
+      "attack_scenario": "Attacker monitors mempool for initialize instructions and frontruns with their own authority.",
+      "secure_fix": "Check if already initialized or use constant seeds for singleton state.",
+      "economic_impact": "High: Complete loss of protocol ownership."
+    },
+    {
+      "id": "VULN-02",
+      "category": "DeFi Logic",
+      "vulnerability_type": "Economic Invariant Violation",
+      "severity": 5,
+      "severity_label": "CRITICAL",
+      "instruction": "swap",
+      "description": "Swap logic fails to enforce k=xy constant product invariant, allowing liquidity extraction.",
+      "attack_scenario": "Attacker performs multiple unbalanced swaps to drain specific pool reserves.",
+      "secure_fix": "Enforce post-execution balance checks against the invariant.",
+      "economic_impact": "Critical: Potential drainage of all pool assets."
+    }
+  ],
+  "timestamp": "2026-02-09T14:54:32Z"
+}
