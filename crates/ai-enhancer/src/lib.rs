@@ -263,12 +263,14 @@ CRITICAL: Output ONLY the raw JSON object. No ```json fencing. No preamble. No e
             chat_template_kwargs,
         };
 
-        let api_url = if is_nvidia {
-            "https://integrate.api.nvidia.com/v1/chat/completions"
+        let api_url = if let Ok(custom_url) = std::env::var("LLM_BASE_URL") {
+            custom_url
+        } else if is_nvidia {
+            "https://integrate.api.nvidia.com/v1/chat/completions".to_string()
         } else if is_openai {
-            "https://api.openai.com/v1/chat/completions"
+            "https://api.openai.com/v1/chat/completions".to_string()
         } else {
-            "https://openrouter.ai/api/v1/chat/completions"
+            "https://openrouter.ai/api/v1/chat/completions".to_string()
         };
 
         let mut req_builder = self
