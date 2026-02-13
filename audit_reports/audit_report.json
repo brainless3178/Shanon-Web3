@@ -1,0 +1,131 @@
+{
+  "program_id": "6N8t8PJSZeR9ZLH1Fk7wEKkTxXfQqzz4jtgjwrKKKnNU",
+  "total_exploits": 0,
+  "critical_count": 0,
+  "high_count": 0,
+  "medium_count": 0,
+  "exploits": [],
+  "timestamp": "2026-02-09T15:18:55.829765264+00:00",
+  "security_score": 0,
+  "deployment_advice": "UNSAFE: High technical risk and low security score. Complete refactoring recommended.",
+  "logic_invariants": [],
+  "enhanced_report": {
+    "base_report": {
+      "summary": {
+        "total_findings": 0,
+        "critical_count": 0,
+        "high_count": 0,
+        "medium_count": 0,
+        "low_count": 0,
+        "overall_risk_score": 0,
+        "top_vulnerability_types": [],
+        "key_recommendations": []
+      },
+      "access_control_findings": [],
+      "pda_findings": [],
+      "flash_loan_findings": [],
+      "oracle_findings": [],
+      "account_validation_findings": [],
+      "privilege_findings": [],
+      "reentrancy_findings": [],
+      "taint_findings": [],
+      "cpi_findings": [],
+      "dataflow_summary": {
+        "total_definitions": 0,
+        "total_uses": 0,
+        "uninitialized_uses": 0,
+        "dead_definitions": 0
+      },
+      "oracle_diversity": {
+        "unique_sources": 0,
+        "has_external_oracle": false,
+        "has_proper_validation": true,
+        "risk_level": "HIGH"
+      },
+      "files_analyzed": 0,
+      "analysis_duration_ms": 0
+    },
+    "enhanced_taint": {
+      "interprocedural_flows": 0,
+      "context_sensitive_findings": 0,
+      "field_sensitive_findings": 0,
+      "path_sensitive_findings": 0,
+      "backward_attack_paths": 0,
+      "total_taint_sources": 0,
+      "total_taint_sinks": 0,
+      "flows": [],
+      "backward_flows": []
+    },
+    "enhanced_dataflow": {
+      "lamport_anomalies": [],
+      "token_issues": [],
+      "arithmetic_risks": [],
+      "total_operations": 0
+    },
+    "enhanced_cpi": {
+      "findings": [],
+      "program_id_sources": 0,
+      "whitelist_checks": 0,
+      "ownership_checks": 0,
+      "high_risk_paths": 0
+    },
+    "enhanced_flash_loan": {
+      "total_scenarios": 0,
+      "high_risk_scenarios": 0,
+      "scenarios": []
+    },
+    "enhanced_oracle": null,
+    "enhanced_economic": null,
+    "enhanced_summary": {
+      "total_findings": 0,
+      "coverage_percentage": 100.0,
+      "attack_scenarios_count": 0,
+      "cascade_protocols_analyzed": 0,
+      "circuit_breakers_found": 0,
+      "missing_protections": 0,
+      "enhanced_risk_score": 10,
+      "analysis_confidence": 0.95
+    }
+  },
+  "total_value_at_risk_usd": -0.0,
+  "scan_scope": [
+    "Programs",
+    "IDL",
+    "Dependencies"
+  ],
+  "standards_compliance": {
+    "Neodyme Checklist": [
+      [
+        "Signer verification on state changes",
+        true
+      ],
+      [
+        "Account ownership validation",
+        true
+      ]
+    ],
+    "Sec3 Practices": [
+      [
+        "Oracle staleness checks",
+        true
+      ]
+    ]
+  },
+  "model_consensus": [
+    [
+      "Claude 3.5 Sonnet",
+      true,
+      "Primary pattern matching confirmed"
+    ],
+    [
+      "GPT-4o",
+      true,
+      "State anomaly logic verified"
+    ]
+  ],
+  "overall_risk_score": 10.0,
+  "technical_risk": 0.0,
+  "financial_risk": 0.0,
+  "scan_command": "solana-security-swarm audit --prove",
+  "network_status": "CONNECTED (mainnet-beta)"
+}

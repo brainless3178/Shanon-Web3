@@ -1,0 +1,68 @@
+name: Continuous Validator Monitoring
+on:
+  schedule:
+    # Run every hour
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+jobs:
+  firedancer-monitoring:
+    name: Firedancer Validator Health Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Run Firedancer Monitor
+        env:
+          SOLANA_RPC_URL: ${{ secrets.SOLANA_RPC_URL || 'https://api.mainnet-beta.solana.com' }}
+        run: |
+          echo "📊 Monitoring Firedancer validator performance..."
+          cargo run -p firedancer-monitor -- monitor \
+            --rpc-url $SOLANA_RPC_URL \
+            --verification-lag-threshold 500 \
+            --skip-vote-threshold 3 \
+            --latency-threshold 1000 \
+            --duration 300 \
+            --output ./monitoring-report.json
+
+      - name: Analyze Health Score
+        run: |
+          HEALTH=$(jq -r '.validator_health_score' ./monitoring-report.json)
+          CRITICAL=$(jq -r '.critical_count' ./monitoring-report.json)
+          HIGH=$(jq -r '.high_count' ./monitoring-report.json)
+          
+          echo "Validator Health Score: $HEALTH/100"
+          echo "Critical Issues: $CRITICAL"
+          echo "High Issues: $HIGH"
+          
+          if [ "$HEALTH" -lt 70 ]; then
+            echo "🚨 ALERT: Validator health critically low!"
+            # Send alert (Slack, PagerDuty, etc.)
+          elif [ "$HEALTH" -lt 85 ]; then
+            echo "⚠️  WARNING: Validator health degraded"
+          else
+            echo "✓ Validator healthy"
+          fi
+
+      - name: Send Alert on Critical Issues
+        if: ${{ failure() }}
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: |
+            🚨 Firedancer Validator Alert
+            Health Score: ${{ steps.analyze.outputs.health }}
+            Critical Issues: ${{ steps.analyze.outputs.critical }}
+            
+            Immediate investigation required!
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+
+      - name: Upload Monitoring Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: firedancer-monitoring-${{ github.run_number }}
+          path: ./monitoring-report.json

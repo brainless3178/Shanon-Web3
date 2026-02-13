@@ -1,0 +1,30 @@
+# Rust
+/target
+Cargo.lock.bak
+**/*.rs.bk
+
+# Node/JS
+node_modules
+dist
+.env
+
+# OS
+.DS_Store
+
+# IDE
+.vscode
+.idea
+
+# Build artifacts
+*.so
+*.o
+*.a
+.hackathon_registration.json
+audit_reports/v2_report.json
+
+
+# Enterprise MD restriction - Only README.md allowed
+**/*.md
+!README.md
+**/audit_reports/*.json
+**/*.mdx

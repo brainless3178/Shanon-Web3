@@ -1,0 +1,15 @@
+[package]
+name = "transaction-forge"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+solana-sdk.workspace = true
+solana-client.workspace = true
+solana-transaction-status = "1.18"
+serde = { workspace = true, features = ["derive"] }
+serde_json.workspace = true
+tokio.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+symbolic-engine = { path = "../symbolic-engine" }

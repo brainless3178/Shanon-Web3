@@ -1,0 +1,15 @@
+[package]
+name = "arithmetic-security-expert"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+program-analyzer = { path = "../program-analyzer" }
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+syn = { version = "2.0", features = ["full", "visit", "parsing", "extra-traits"] }
+quote = "1.0"
+proc-macro2 = "1.0"
+anyhow = "1.0"

@@ -1,0 +1,9 @@
+[package]
+name = "trident_fuzz_1_account_data_matching"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+trident-client = "0.12"
+trident-fuzz = "0.2"
+anchor-lang = "0.30"

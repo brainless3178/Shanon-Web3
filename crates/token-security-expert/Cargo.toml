@@ -1,0 +1,11 @@
+[package]
+name = "token-security-expert"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+program-analyzer = { path = "../program-analyzer" }
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tracing.workspace = true

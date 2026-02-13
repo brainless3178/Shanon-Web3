@@ -1,0 +1,45 @@
+# Solana Security Analyzer Configuration
+# Copy this file to your project root and customize as needed
+
+# Minimum severity level to report (1-5)
+# 1 = Info, 2 = Low, 3 = Medium, 4 = High, 5 = Critical
+min_severity = 2
+
+# Enable LLM-assisted analysis (sends code to external API)
+# Set to false for proprietary codebases
+enable_llm = false
+
+# Enable parallel analysis for performance
+parallel_analysis = true
+
+# Maximum findings per file (0 = unlimited)
+max_findings_per_file = 50
+
+# Output format: "json", "markdown", "sarif"
+output_format = "markdown"
+
+# Vulnerability categories to enable (empty = all)
+# enabled_categories = ["authentication", "arithmetic", "oracle"]
+
+# Vulnerability categories to skip
+disabled_categories = []
+
+# Custom patterns file (optional)
+# custom_patterns_file = "./custom_patterns.toml"
+
+[thresholds]
+# Maximum cyclomatic complexity before flagging
+max_complexity = 20
+
+# Maximum function length (lines) before flagging
+max_function_length = 100
+
+# Minimum confidence score to report (0.0-1.0)
+min_confidence = 0.5
+
+# Oracle staleness threshold in seconds (default: 5 minutes)
+oracle_staleness_seconds = 300
+
+# Maximum slippage tolerance in basis points (100 = 1%)
+max_slippage_bps = 100
+	*cascade0829file:///home/elliot/Music/hackathon/analyzer.example.toml

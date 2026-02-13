@@ -1,0 +1,15 @@
+[package]
+name = "attack-simulator"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+program-analyzer = { path = "../program-analyzer" }
+syn = { workspace = true, features = ["full", "extra-traits"] }
+walkdir = { workspace = true }
+anyhow = { workspace = true }
+
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tracing.workspace = true

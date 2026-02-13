@@ -1,0 +1,20 @@
+{
+    "programs": {
+        "vulnerable_vault": {
+            "program_id": "47poGSxjXsErkcCrZqEJtomHrdxHtfAbpfYmx3xRndVJ",
+            "description": "Intentionally insecure vault — test target for scanner"
+        },
+        "exploit_registry": {
+            "program_id": "4cb3bZbBbXUxX6Ky4FFsEZEUBPe4TaRhvBEyuV9En6Zq",
+            "description": "On-chain registry for exploit findings and audit summaries"
+        },
+        "security_shield": {
+            "program_id": "339CyvURLrdBDsVDgmpT3kp2AjU9owu2YHaKuGBANzgT",
+            "description": "Hardened vault — demonstrates secure patterns"
+        }
+    },
+    "network": "devnet",
+    "build_status": "compiled",
+    "deploy_status": "pending",
+    "note": "Programs compile and pass Rust tests. Deployment requires devnet SOL airdrop."
+}

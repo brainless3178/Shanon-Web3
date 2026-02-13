@@ -1,0 +1,19 @@
+[package]
+name = "abstract-interpreter"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+program-analyzer = { path = "../program-analyzer" }
+syn = { version = "2.0", features = ["full", "extra-traits", "visit"] }
+quote = { workspace = true }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "1.0"
+
+[dev-dependencies]
+criterion = "0.5"
+
+[[bench]]
+name = "interpreter_benchmark"
+harness = false

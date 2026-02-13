@@ -1,0 +1,38 @@
+[package]
+name = "wacana-analyzer"
+version.workspace = true
+edition.workspace = true
+description = "WACANA: Concolic Analysis for WASM/SBF smart contracts — detects on-chain data vulnerabilities"
+license = "MIT"
+keywords = ["wasm", "sbf", "concolic", "solana", "security"]
+categories = ["development-tools", "cryptography"]
+
+[dependencies]
+# WASM parsing
+wasmparser = "0.219"
+
+# SBF/ELF binary analysis
+goblin = "0.9"
+
+# Constraint solving (Z3 SMT)
+z3 = "0.12"
+
+# Rust AST parsing (for source-assisted analysis)
+syn = { version = "2.0", features = ["full", "extra-traits", "visit", "parsing"] }
+quote = "1.0"
+proc-macro2 = { version = "1.0", features = ["span-locations"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Hashing & fingerprinting
+sha2 = "0.10"
+hex = "0.4"
+
+# Utilities
+thiserror = "1.0"
+tracing = "0.1"
+chrono = "0.4"
+walkdir = "2.4"
+rand = "0.8"

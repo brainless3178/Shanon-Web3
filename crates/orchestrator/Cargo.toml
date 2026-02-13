@@ -1,0 +1,88 @@
+[package]
+name = "orchestrator"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name = "solana-security-swarm"
+path = "src/main.rs"
+
+[features]
+default = ["z3-analysis"]
+z3-analysis = ["economic-verifier", "concolic-executor", "invariant-miner"]
+auto-response = []
+
+[dependencies]
+# Workspace dependencies
+symbolic-engine = { path = "../symbolic-engine" }
+z3 = "0.12"
+program-analyzer = { path = "../program-analyzer" }
+llm-strategist = { path = "../llm-strategist" }
+ai-enhancer = { path = "../ai-enhancer" }
+transaction-forge = { path = "../transaction-forge" }
+fxhash = "0.2.1"
+hackathon-client = { path = "../hackathon-client" }
+attack-simulator = { path = "../attack-simulator" }
+defi-security-expert = { path = "../defi-security-expert" }
+token-security-expert = { path = "../token-security-expert" }
+account-security-expert = { path = "../account-security-expert" }
+arithmetic-security-expert = { path = "../arithmetic-security-expert" }
+integration-orchestrator = { path = "../integration-orchestrator" }
+exploit-registry = { path = "../../programs/exploit-registry", features = ["cpi", "no-entrypoint"] }
+
+# Advanced Analysis Crates (non-Z3)
+taint-analyzer = { path = "../taint-analyzer" }
+dataflow-analyzer = { path = "../dataflow-analyzer" }
+abstract-interpreter = { path = "../abstract-interpreter" }
+cpi-analyzer = { path = "../cpi-analyzer" }
+security-fuzzer = { path = "../security-fuzzer" }
+kani-verifier = { path = "../kani-verifier" }
+certora-prover = { path = "../certora-prover" }
+wacana-analyzer = { path = "../wacana-analyzer" }
+trident-fuzzer = { path = "../trident-fuzzer" }
+fuzzdelsol = { path = "../fuzzdelsol" }
+sec3-analyzer = { path = "../sec3-analyzer" }
+l3x-analyzer = { path = "../l3x-analyzer" }
+geiger-analyzer = { path = "../geiger-analyzer" }
+anchor-security-analyzer = { path = "../anchor-security-analyzer" }
+
+# Z3-dependent crates (optional)
+economic-verifier = { path = "../economic-verifier", optional = true }
+concolic-executor = { path = "../concolic-executor", optional = true }
+invariant-miner = { path = "../invariant-miner", optional = true }
+
+walkdir = "2.4"
+syn = { version = "2.0", features = ["full", "parsing", "visit"] }
+quote = "1.0"
+proc-macro2 = { version = "1.0", features = ["span-locations"] }
+
+# Workspace re-exports
+anchor-lang.workspace = true
+anchor-client.workspace = true
+solana-sdk.workspace = true
+solana-client.workspace = true
+solana-transaction-status.workspace = true
+solana-account-decoder.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+clap.workspace = true
+thiserror.workspace = true
+anyhow.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+colored.workspace = true
+chrono.workspace = true
+uuid.workspace = true
+sha2.workspace = true
+reqwest = { version = "0.11", features = ["json"] }
+zstd = "0.12"
+dialoguer = { version = "0.11", features = ["fuzzy-select"] }
+console = "0.15"
+
+# TUI Dashboard
+ratatui = "0.28"
+crossterm = "0.28"
+clap_complete = "4.5.66"
+git-scanner = { version = "0.1.0", path = "../git-scanner" }
+tempfile = "3.25.0"

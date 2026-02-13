@@ -1,0 +1,11 @@
+[package]
+name = "invariant-miner"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "1.0"
+syn = { version = "2.0", features = ["full", "parsing", "visit"] }
+quote = "1.0"

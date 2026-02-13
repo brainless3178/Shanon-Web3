@@ -1,0 +1,11 @@
+target/
+.git/
+.gitignore
+.anchor/
+.gemini/
+.agent/
+node_modules/
+test-ledger/
+*.swp
+*.swo
+*~

@@ -1,0 +1,153 @@
+[workspace]
+resolver = "2"
+
+members = [
+    "programs/exploit-registry",
+    "programs/vulnerable-vault",
+    "programs/vulnerable-token",
+    "programs/vulnerable-staking",
+    "programs/security_shield",
+    "crates/program-analyzer",
+    "crates/llm-strategist",
+    "crates/transaction-forge",
+    "crates/orchestrator",
+    "crates/hackathon-client",
+    "crates/secure-code-gen",
+    "crates/attack-simulator",
+    "crates/defi-security-expert",
+    "crates/token-security-expert",
+    "crates/account-security-expert",
+    "crates/arithmetic-security-expert",
+    "crates/integration-orchestrator",
+    "crates/benchmark-suite",
+    "crates/consensus-engine",
+    # Advanced Analysis Crates
+    "crates/taint-analyzer",
+    "crates/dataflow-analyzer",
+    "crates/abstract-interpreter",
+    "crates/cpi-analyzer",
+    "crates/security-fuzzer",
+    "crates/ai-enhancer",
+    # Z3-dependent crates (excluded from default build due to C++ compilation issues)
+    # Build with: cargo build -p economic-verifier -p concolic-executor -p invariant-miner
+    "crates/economic-verifier",
+    "crates/concolic-executor",
+    "crates/invariant-miner",
+    "crates/symbolic-engine", "crates/git-scanner",
+    "crates/kani-verifier",
+    "crates/certora-prover",
+    "crates/wacana-analyzer",
+    "crates/trident-fuzzer",
+    "crates/fuzzdelsol",
+    "crates/sec3-analyzer",
+    "crates/l3x-analyzer",
+    "crates/geiger-analyzer",
+    "crates/anchor-security-analyzer",
+    "crates/firedancer-monitor",
+    "crates/api-server",
+    "exploits",
+]
+
+# Default members exclude Z3-dependent crates which require system z3 libraries
+default-members = [
+    "programs/exploit-registry",
+    "programs/vulnerable-vault",
+    "programs/vulnerable-token",
+    "programs/vulnerable-staking",
+    "programs/security_shield",
+    "crates/program-analyzer",
+    "crates/llm-strategist",
+    "crates/transaction-forge",
+    "crates/orchestrator",
+    "crates/hackathon-client",
+    "crates/secure-code-gen",
+    "crates/attack-simulator",
+    "crates/defi-security-expert",
+    "crates/token-security-expert",
+    "crates/account-security-expert",
+    "crates/arithmetic-security-expert",
+    "crates/integration-orchestrator",
+    "crates/benchmark-suite",
+    "crates/consensus-engine",
+    "crates/taint-analyzer",
+    "crates/dataflow-analyzer",
+    "crates/abstract-interpreter",
+    "crates/cpi-analyzer",
+    "crates/security-fuzzer",
+    "crates/ai-enhancer",
+    "crates/kani-verifier",
+    "crates/certora-prover",
+    "crates/trident-fuzzer",
+    "crates/fuzzdelsol",
+    "crates/sec3-analyzer",
+    "crates/l3x-analyzer",
+    "crates/geiger-analyzer",
+    "crates/anchor-security-analyzer",
+    "crates/firedancer-monitor",
+    "crates/api-server",
+    "exploits",
+]
+
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+authors = ["Antigravity <agent@solana-security.com>"]
+
+[workspace.dependencies]
+# Solana & Anchor
+anchor-lang = "0.30.1"
+anchor-spl = "0.30.1"
+anchor-client = "0.30.1"
+solana-sdk = "1.18"
+# NOTE: solana-client v1.18.x triggers a future-incompatibility warning about
+# never type fallback. Newer versions (2.x/3.x) exist but require a full Solana
+# SDK migration (breaking API changes). This is a known upstream issue:
+# https://github.com/solana-labs/solana — tracked via `cargo report future-incompatibilities`
+solana-client = "1.18"
+solana-program = "1.18"
+solana-program-test = "1.18"
+solana-transaction-status = "1.18"
+solana-account-decoder = "1.18"
+
+# Symbolic Execution
+# z3 = { version = "0.12", features = ["static-link-z3"] }
+
+# Rust Parsing
+syn = { version = "2.0", features = ["full", "extra-traits"] }
+quote = "1.0"
+proc-macro2 = { version = "1.0", features = ["span-locations"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+borsh = "0.10"
+
+# Async Runtime
+tokio = { version = "1.35", features = ["full"] }
+reqwest = { version = "0.11", features = ["json"] }
+
+# Utilities
+thiserror = "1.0"
+anyhow = "1.0"
+clap = { version = "4.4", features = ["derive", "env"] }
+walkdir = "2.4"
+bs58 = "0.5"
+sha2 = "0.10"
+tera = "1.19"
+uuid = { version = "1.6", features = ["v4"] }
+chrono = { version = "0.4", features = ["serde"] }
+colored = "2.1"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[profile.release]
+overflow-checks = true
+lto = "fat"
+codegen-units = 1
+
+[profile.dev]
+overflow-checks = true

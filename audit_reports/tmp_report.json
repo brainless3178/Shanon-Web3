@@ -1,0 +1,241 @@
+{
+  "program_id": "tmp",
+  "total_exploits": 0,
+  "critical_count": 0,
+  "high_count": 0,
+  "medium_count": 0,
+  "exploits": [],
+  "timestamp": "2026-02-12T09:35:45.177810571+00:00",
+  "security_score": 0,
+  "deployment_advice": "UNSAFE: High technical risk and low security score. Complete refactoring recommended.",
+  "logic_invariants": [],
+  "enhanced_report": {
+    "base_report": {
+      "summary": {
+        "total_findings": 0,
+        "critical_count": 0,
+        "high_count": 0,
+        "medium_count": 0,
+        "low_count": 0,
+        "overall_risk_score": 0,
+        "top_vulnerability_types": [],
+        "key_recommendations": []
+      },
+      "access_control_findings": [],
+      "pda_findings": [],
+      "flash_loan_findings": [],
+      "oracle_findings": [],
+      "account_validation_findings": [],
+      "privilege_findings": [],
+      "reentrancy_findings": [],
+      "taint_findings": [],
+      "cpi_findings": [],
+      "dataflow_summary": {
+        "total_definitions": 0,
+        "total_uses": 0,
+        "uninitialized_uses": 0,
+        "dead_definitions": 0
+      },
+      "oracle_diversity": {
+        "unique_sources": 0,
+        "has_external_oracle": false,
+        "has_proper_validation": true,
+        "risk_level": "HIGH"
+      },
+      "files_analyzed": 0,
+      "analysis_duration_ms": 0
+    },
+    "enhanced_taint": {
+      "interprocedural_flows": 0,
+      "context_sensitive_findings": 0,
+      "field_sensitive_findings": 0,
+      "path_sensitive_findings": 0,
+      "backward_attack_paths": 0,
+      "total_taint_sources": 0,
+      "total_taint_sinks": 0,
+      "flows": [],
+      "backward_flows": []
+    },
+    "enhanced_dataflow": {
+      "lamport_anomalies": [],
+      "token_issues": [],
+      "arithmetic_risks": [],
+      "total_operations": 0
+    },
+    "enhanced_cpi": {
+      "findings": [],
+      "program_id_sources": 0,
+      "whitelist_checks": 0,
+      "ownership_checks": 0,
+      "high_risk_paths": 0
+    },
+    "enhanced_flash_loan": {
+      "total_scenarios": 0,
+      "high_risk_scenarios": 0,
+      "scenarios": []
+    },
+    "enhanced_oracle": null,
+    "enhanced_economic": null,
+    "enhanced_summary": {
+      "total_findings": 0,
+      "coverage_percentage": 100.0,
+      "attack_scenarios_count": 0,
+      "cascade_protocols_analyzed": 0,
+      "circuit_breakers_found": 0,
+      "missing_protections": 0,
+      "enhanced_risk_score": 10,
+      "analysis_confidence": 0.95
+    }
+  },
+  "kani_report": null,
+  "certora_report": null,
+  "wacana_report": null,
+  "trident_report": null,
+  "fuzzdelsol_report": null,
+  "sec3_report": null,
+  "l3x_report": null,
+  "geiger_report": {
+    "program_path": "/tmp",
+    "timestamp": "2026-02-12T09:35:45.165042819+00:00",
+    "findings": [],
+    "metrics": {
+      "unsafe_blocks": 0,
+      "unsafe_functions": 0,
+      "ffi_calls": 0,
+      "raw_pointers": 0,
+      "transmute_calls": 0,
+      "asm_blocks": 0,
+      "unsafe_traits": 0,
+      "union_types": 0
+    },
+    "files_scanned": 7,
+    "lines_scanned": 391,
+    "critical_count": 0,
+    "high_count": 0,
+    "medium_count": 0,
+    "low_count": 0,
+    "safety_score": 100,
+    "execution_time_ms": 102,
+    "engine_version": "cargo-geiger-analyzer-1.0.0"
+  },
+  "anchor_report": null,
+  "total_value_at_risk_usd": -0.0,
+  "scan_scope": [
+    "Programs",
+    "IDL",
+    "Dependencies",
+    "Kani Formal Verification",
+    "Certora SBF Bytecode Verification",
+    "WACANA Concolic Analysis",
+    "Trident Stateful Fuzzing",
+    "FuzzDelSol Binary Fuzzing"
+  ],
+  "standards_compliance": {
+    "Advanced Analysis": [
+      [
+        "WACANA Bytecode Concolic Analysis",
+        true
+      ],
+      [
+        "Certora Machine-Code Verification",
+        true
+      ],
+      [
+        "Trident Stateful Fuzzing",
+        true
+      ],
+      [
+        "FuzzDelSol Binary Fuzzing",
+        true
+      ],
+      [
+        "Sec3 (Soteria) Static Analysis",
+        true
+      ],
+      [
+        "L3X AI-Driven Analysis",
+        true
+      ],
+      [
+        "Cargo-geiger Unsafe Detection",
+        true
+      ],
+      [
+        "Anchor Framework Security",
+        true
+      ]
+    ],
+    "Neodyme Checklist": [
+      [
+        "Signer verification on state changes",
+        true
+      ],
+      [
+        "Account ownership validation",
+        true
+      ]
+    ]
+  },
+  "model_consensus": [
+    [
+      "Claude 3.5 Sonnet",
+      true,
+      "Primary pattern matching confirmed"
+    ],
+    [
+      "GPT-4o",
+      true,
+      "State anomaly logic verified"
+    ],
+    [
+      "Kani CBMC",
+      true,
+      "Bit-precise bounded model checking of account invariants"
+    ],
+    [
+      "Certora Solana Prover",
+      true,
+      "Formal verification of SBF bytecode — catches compiler-introduced bugs"
+    ],
+    [
+      "WACANA Concolic",
+      true,
+      "Concolic analysis of WASM/SBF bytecode — catches on-chain data vulnerabilities via path exploration"
+    ],
+    [
+      "Trident Fuzzer",
+      true,
+      "Ackee Blockchain stateful fuzzing — full ledger simulation with property-based testing"
+    ],
+    [
+      "FuzzDelSol",
+      true,
+      "Coverage-guided eBPF binary fuzzer — detects missing signer checks in <5s"
+    ],
+    [
+      "Sec3 (Soteria)",
+      true,
+      "AST-level static analysis — detects owner checks, integer overflows, account confusion, CPI guards, PDA validation"
+    ],
+    [
+      "L3X AI",
+      true,
+      "ML-powered vulnerability detection — code embeddings, control flow GNN, anomaly detection, pattern learning from historical exploits"
+    ],
+    [
+      "Cargo-geiger",
+      true,
+      "Unsafe Rust code detector — identifies unsafe blocks, FFI calls, raw pointers, transmute, inline asm — critical pre-step for high-performance Solana programs"
+    ],
+    [
+      "Anchor Framework",
+      true,
+      "Anchor security pattern validator — checks #[account(...)] constraints, signer validation, PDA derivation, CPI guards, Token-2022 hooks — 88% of secure Solana contracts use Anchor"
+    ]
+  ],
+  "overall_risk_score": 10.0,
+  "technical_risk": 0.0,
+  "financial_risk": 0.0,
+  "scan_command": "solana-security-swarm audit --prove",
+  "network_status": "CONNECTED (mainnet-beta)"
+}

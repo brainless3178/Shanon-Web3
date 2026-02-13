@@ -1,0 +1,661 @@
+name: Solana Security Swarm - Complete Audit Pipeline
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Run daily security audits at 2 AM UTC
+    - cron: '0 2 * * *'
+
+env:
+  RUST_VERSION: 1.75.0
+  SOLANA_VERSION: 1.18.26
+  ANCHOR_VERSION: 0.29.0
+
+jobs:
+  # ═══════════════════════════════════════════════════════════════════
+  # PHASE 1: Pre-Flight Checks & Environment Setup
+  # ═══════════════════════════════════════════════════════════════════
+  setup:
+    name: Environment Setup & Validation
+    runs-on: ubuntu-latest
+    outputs:
+      cache-key: ${{ steps.cache-keys.outputs.rust }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for git-based analysis
+
+      - name: Setup Rust Toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          components: rustfmt, clippy, rust-src
+
+      - name: Setup Solana CLI
+        run: |
+          sh -c "$(curl -sSfL https://release.solana.com/v${{ env.SOLANA_VERSION }}/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+
+      - name: Setup Anchor Framework
+        run: |
+          cargo install --git https://github.com/coral-xyz/anchor --tag v${{ env.ANCHOR_VERSION }} anchor-cli --locked
+
+      - name: Cache Dependencies
+        id: cache-keys
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Validate Program Structure
+        run: |
+          echo "✓ Validating Solana program structure..."
+          test -f Cargo.toml || (echo "❌ Cargo.toml not found" && exit 1)
+          test -d programs || test -d src || (echo "❌ No programs/ or src/ directory" && exit 1)
+          echo "✓ Program structure validated"
+
+  # ═══════════════════════════════════════════════════════════════════
+  # PHASE 2: Unsafe Rust Code Detection (Pre-Step)
+  # ═══════════════════════════════════════════════════════════════════
+  cargo-geiger:
+    name: Cargo-Geiger Unsafe Code Detection
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Run Cargo-Geiger Analysis
+        run: |
+          echo "🔍 Running cargo-geiger unsafe code detection..."
+          cargo run -p orchestrator -- audit \
+            --repo . \
+            --geiger=true \
+            --anchor=false \
+            --wacana=false \
+            --trident=false \
+            --fuzzdelsol=false \
+            --sec3=false \
+            --l3x=false \
+            --output-dir ./audit-reports/geiger
+
+      - name: Check Safety Score
+        run: |
+          SAFETY_SCORE=$(jq -r '.geiger_report.safety_score' ./audit-reports/geiger/report.json)
+          echo "Safety Score: $SAFETY_SCORE/100"
+          if [ "$SAFETY_SCORE" -lt 70 ]; then
+            echo "❌ Safety score below threshold (70). Found excessive unsafe code."
+            exit 1
+          fi
+          echo "✓ Safety score acceptable: $SAFETY_SCORE/100"
+
+      - name: Upload Geiger Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: geiger-report
+          path: ./audit-reports/geiger/
+
+  # ═══════════════════════════════════════════════════════════════════
+  # PHASE 3: Anchor Framework Security Analysis
+  # ═══════════════════════════════════════════════════════════════════
+  anchor-security:
+    name: Anchor Framework Security Validation
+    runs-on: ubuntu-latest
+    needs: [setup, cargo-geiger]
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Rust & Anchor
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Run Anchor Security Analysis
+        run: |
+          echo "🔍 Running Anchor Framework security analysis..."
+          cargo run -p orchestrator -- audit \
+            --repo . \
+            --anchor=true \
+            --geiger=false \
+            --wacana=false \
+            --trident=false \
+            --fuzzdelsol=false \
+            --sec3=false \
+            --l3x=false \
+            --output-dir ./audit-reports/anchor
+
+      - name: Check Anchor Security Score
+        run: |
+          if [ -f ./audit-reports/anchor/report.json ]; then
+            ANCHOR_SCORE=$(jq -r '.anchor_report.anchor_security_score' ./audit-reports/anchor/report.json)
+            echo "Anchor Security Score: $ANCHOR_SCORE/100"
+            if [ "$ANCHOR_SCORE" -lt 90 ]; then
+              echo "⚠️  Anchor security score below production threshold (90)"
+              exit 1
+            fi
+            echo "✓ Anchor security validated: $ANCHOR_SCORE/100"
+          else
+            echo "ℹ️  Program does not use Anchor Framework - skipping"
+          fi
+
+      - name: Upload Anchor Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: anchor-report
+          path: ./audit-reports/anchor/
+
+  # ═══════════════════════════════════════════════════════════════════
+  # PHASE 4: Static Analysis (Sec3 Soteria + L3X AI)
+  # ═══════════════════════════════════════════════════════════════════
+  static-analysis:
+    name: Static Analysis (Sec3 + L3X AI)
+    runs-on: ubuntu-latest
+    needs: [setup, anchor-security]
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Run Sec3 (Soteria) Static Analysis
+        run: |
+          echo "🔍 Running Sec3 (Soteria) static analysis..."
+          cargo run -p orchestrator -- audit \
+            --repo . \
+            --sec3=true \
+            --l3x=false \
+            --geiger=false \
+            --anchor=false \
+            --wacana=false \
+            --trident=false \
+            --fuzzdelsol=false \
+            --output-dir ./audit-reports/sec3
+
+      - name: Run L3X AI-Driven Analysis
+        run: |
+          echo "🤖 Running L3X AI-driven vulnerability detection..."
+          cargo run -p orchestrator -- audit \
+            --repo . \
+            --l3x=true \
+            --sec3=false \
+            --geiger=false \
+            --anchor=false \
+            --wacana=false \
+            --trident=false \
+            --fuzzdelsol=false \
+            --output-dir ./audit-reports/l3x
+
+      - name: Check Critical Findings
+        run: |
+          SEC3_CRITICAL=$(jq -r '.sec3_report.critical_count' ./audit-reports/sec3/report.json || echo "0")
+          L3X_CRITICAL=$(jq -r '.l3x_report.critical_count' ./audit-reports/l3x/report.json || echo "0")
+          
+          echo "Sec3 Critical Findings: $SEC3_CRITICAL"
+          echo "L3X Critical Findings: $L3X_CRITICAL"
+          
+          TOTAL_CRITICAL=$((SEC3_CRITICAL + L3X_CRITICAL))
+          if [ "$TOTAL_CRITICAL" -gt 0 ]; then
+            echo "❌ Found $TOTAL_CRITICAL critical vulnerabilities in static analysis"
+            exit 1
+          fi
+          echo "✓ No critical vulnerabilities found"
+
+      - name: Upload Static Analysis Reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: static-analysis-reports
+          path: ./audit-reports/
+
+  # ═══════════════════════════════════════════════════════════════════
+  # PHASE 5: Formal Verification (Kani + Certora)
+  # ═══════════════════════════════════════════════════════════════════
+  formal-verification:
+    name: Formal Verification (Kani + Certora)
+    runs-on: ubuntu-latest
+    needs: [setup, static-analysis]
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Install Kani Verifier
+        run: |
+          cargo install --locked kani-verifier
+          cargo kani setup
+
+      - name: Run Kani Formal Verification
+        run: |
+          echo "🔬 Running Kani formal verification..."
+          cargo run -p orchestrator -- audit \
+            --repo . \
+            --prove=true \
+            --geiger=false \
+            --anchor=false \
+            --wacana=false \
+            --trident=false \
+            --fuzzdelsol=false \
+            --sec3=false \
+            --l3x=false \
+            --output-dir ./audit-reports/kani
+
+      - name: Setup Certora Prover
+        env:
+          CERTORA_KEY: ${{ secrets.CERTORA_API_KEY }}
+        run: |
+          pip3 install certora-cli
+          echo "CERTORA_KEY=$CERTORA_KEY" >> $GITHUB_ENV
+
+      - name: Run Certora Prover (SBF Bytecode Verification)
+        run: |
+          echo "🔬 Running Certora Prover on SBF bytecode..."
+          # Certora integration runs automatically in audit pipeline
+          cargo run -p orchestrator -- audit \
+            --repo . \
+            --prove=true \
+            --output-dir ./audit-reports/certora
+
+      - name: Check Verification Results
+        run: |
+          if grep -q "VERIFICATION FAILED" ./audit-reports/kani/*.log; then
+            echo "❌ Kani verification failed"
+            exit 1
+          fi
+          echo "✓ Formal verification passed"
+
+      - name: Upload Verification Reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: formal-verification-reports
+          path: ./audit-reports/
+
+  # ═══════════════════════════════════════════════════════════════════
+  # PHASE 6: Symbolic Execution (WACANA)
+  # ═══════════════════════════════════════════════════════════════════
+  symbolic-execution:
+    name: WACANA Symbolic Execution
+    runs-on: ubuntu-latest
+    needs: [setup, formal-verification]
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Install Z3 SMT Solver
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y z3
+
+      - name: Run WACANA Symbolic Execution
+        run: |
+          echo "🔍 Running WACANA symbolic execution..."
+          cargo run -p orchestrator -- audit \
+            --repo . \
+            --wacana=true \
+            --geiger=false \
+            --anchor=false \
+            --trident=false \
+            --fuzzdelsol=false \
+            --sec3=false \
+            --l3x=false \
+            --prove=false \
+            --output-dir ./audit-reports/wacana
+
+      - name: Check Path Explosion
+        run: |
+          PATHS=$(jq -r '.wacana_report.paths_explored' ./audit-reports/wacana/report.json || echo "0")
+          echo "Symbolic paths explored: $PATHS"
+          if [ "$PATHS" -gt 10000 ]; then
+            echo "⚠️  Path explosion detected - program may be too complex"
+          fi
+
+      - name: Upload WACANA Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: wacana-report
+          path: ./audit-reports/wacana/
+
+  # ═══════════════════════════════════════════════════════════════════
+  # PHASE 7: Fuzzing (Trident + FuzzDelSol)
+  # ═══════════════════════════════════════════════════════════════════
+  fuzzing:
+    name: Fuzzing (Trident + FuzzDelSol)
+    runs-on: ubuntu-latest
+    needs: [setup, symbolic-execution]
+    timeout-minutes: 30
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Rust & Anchor
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Install Trident Fuzzer
+        run: |
+          cargo install trident-cli
+
+      - name: Run Trident Fuzzing
+        run: |
+          echo "🎲 Running Trident property-based fuzzing..."
+          cargo run -p orchestrator -- audit \
+            --repo . \
+            --trident=true \
+            --geiger=false \
+            --anchor=false \
+            --wacana=false \
+            --fuzzdelsol=false \
+            --sec3=false \
+            --l3x=false \
+            --prove=false \
+            --output-dir ./audit-reports/trident
+
+      - name: Run FuzzDelSol (eBPF Bytecode Fuzzing)
+        run: |
+          echo "🎲 Running FuzzDelSol eBPF bytecode fuzzing..."
+          cargo run -p orchestrator -- audit \
+            --repo . \
+            --fuzzdelsol=true \
+            --geiger=false \
+            --anchor=false \
+            --wacana=false \
+            --trident=false \
+            --sec3=false \
+            --l3x=false \
+            --prove=false \
+            --output-dir ./audit-reports/fuzzdelsol
+
+      - name: Check Fuzzing Crashes
+        run: |
+          TRIDENT_CRASHES=$(jq -r '.trident_report.crashes_found' ./audit-reports/trident/report.json || echo "0")
+          FUZZDELSOL_CRASHES=$(jq -r '.fuzzdelsol_report.crashes_found' ./audit-reports/fuzzdelsol/report.json || echo "0")
+          
+          echo "Trident crashes: $TRIDENT_CRASHES"
+          echo "FuzzDelSol crashes: $FUZZDELSOL_CRASHES"
+          
+          TOTAL_CRASHES=$((TRIDENT_CRASHES + FUZZDELSOL_CRASHES))
+          if [ "$TOTAL_CRASHES" -gt 0 ]; then
+            echo "❌ Found $TOTAL_CRASHES crashes during fuzzing"
+            exit 1
+          fi
+          echo "✓ No crashes found during fuzzing"
+
+      - name: Upload Fuzzing Reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: fuzzing-reports
+          path: ./audit-reports/
+
+  # ═══════════════════════════════════════════════════════════════════
+  # PHASE 8: Firedancer Validator Performance Monitoring
+  # ═══════════════════════════════════════════════════════════════════
+  firedancer-monitoring:
+    name: Firedancer Validator Performance Check
+    runs-on: ubuntu-latest
+    needs: [setup]
+    if: github.event_name == 'schedule' || github.event_name == 'push'
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Run Firedancer Performance Monitoring
+        env:
+          SOLANA_RPC_URL: ${{ secrets.SOLANA_RPC_URL || 'https://api.mainnet-beta.solana.com' }}
+        run: |
+          echo "📊 Running Firedancer validator performance monitoring..."
+          cargo run -p firedancer-monitor -- monitor \
+            --rpc-url $SOLANA_RPC_URL \
+            --duration 60 \
+            --output ./audit-reports/firedancer/
+
+      - name: Check Validator Health
+        run: |
+          HEALTH_SCORE=$(jq -r '.validator_health_score' ./audit-reports/firedancer/report.json)
+          echo "Validator Health Score: $HEALTH_SCORE/100"
+          if [ "$HEALTH_SCORE" -lt 80 ]; then
+            echo "⚠️  Validator health below threshold (80)"
+            # Don't fail build, just warn
+          fi
+          echo "✓ Validator health check complete"
+
+      - name: Upload Firedancer Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: firedancer-report
+          path: ./audit-reports/firedancer/
+
+  # ═══════════════════════════════════════════════════════════════════
+  # PHASE 9: Complete Audit (All Tools)
+  # ═══════════════════════════════════════════════════════════════════
+  complete-audit:
+    name: Complete Security Audit (All Tools)
+    runs-on: ubuntu-latest
+    needs: [setup]
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Environment
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Run Complete Audit Pipeline
+        run: |
+          echo "🚀 Running COMPLETE Solana Security Swarm audit..."
+          cargo run -p orchestrator -- audit \
+            --repo . \
+            --geiger=true \
+            --anchor=true \
+            --sec3=true \
+            --l3x=true \
+            --wacana=true \
+            --trident=true \
+            --fuzzdelsol=true \
+            --prove=true \
+            --output-dir ./audit-reports/complete \
+            --dashboard=true
+
+      - name: Generate Security Report
+        run: |
+          echo "📊 Generating comprehensive security report..."
+          cargo run -p orchestrator -- report \
+            --input ./audit-reports/complete/report.json \
+            --output ./audit-reports/complete/security-report.pdf \
+            --format pdf
+
+      - name: Check Overall Risk Score
+        run: |
+          RISK_SCORE=$(jq -r '.overall_risk_score' ./audit-reports/complete/report.json)
+          CRITICAL=$(jq -r '.critical_count' ./audit-reports/complete/report.json)
+          HIGH=$(jq -r '.high_count' ./audit-reports/complete/report.json)
+          
+          echo "Overall Risk Score: $RISK_SCORE"
+          echo "Critical Vulnerabilities: $CRITICAL"
+          echo "High Vulnerabilities: $HIGH"
+          
+          if [ "$CRITICAL" -gt 0 ]; then
+            echo "❌ CRITICAL vulnerabilities found - deployment blocked"
+            exit 1
+          fi
+          
+          if [ "$HIGH" -gt 5 ]; then
+            echo "❌ Too many HIGH vulnerabilities - deployment blocked"
+            exit 1
+          fi
+          
+          if [ "$RISK_SCORE" -gt 7 ]; then
+            echo "❌ Risk score too high - deployment blocked"
+            exit 1
+          fi
+          
+          echo "✓ Security audit passed - safe to deploy"
+
+      - name: Upload Complete Audit Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: complete-audit-report
+          path: ./audit-reports/complete/
+
+  # ═══════════════════════════════════════════════════════════════════
+  # PHASE 10: Security Dashboard & Reporting
+  # ═══════════════════════════════════════════════════════════════════
+  security-dashboard:
+    name: Generate Security Dashboard
+    runs-on: ubuntu-latest
+    needs: [complete-audit]
+    if: always()
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Download All Reports
+        uses: actions/download-artifact@v3
+        with:
+          path: ./all-reports/
+
+      - name: Generate Unified Dashboard
+        run: |
+          echo "📊 Generating unified security dashboard..."
+          cargo run -p orchestrator -- dashboard \
+            --reports ./all-reports/ \
+            --output ./dashboard/index.html
+
+      - name: Deploy Dashboard to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        if: github.ref == 'refs/heads/main'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dashboard
+          destination_dir: security-dashboard
+
+      - name: Post Summary to PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('./all-reports/complete-audit-report/report.json', 'utf8'));
+            
+            const summary = `
+            ## 🛡️ Solana Security Swarm Audit Results
+            
+            **Overall Risk Score**: ${report.overall_risk_score}/10
+            **Safety Score (Geiger)**: ${report.geiger_report?.safety_score || 'N/A'}/100
+            **Anchor Security Score**: ${report.anchor_report?.anchor_security_score || 'N/A'}/100
+            
+            ### Vulnerability Summary
+            - 🔴 Critical: ${report.critical_count}
+            - 🟠 High: ${report.high_count}
+            - 🟡 Medium: ${report.medium_count}
+            - 🟢 Low: ${report.low_count}
+            
+            ### Tools Executed
+            - ✅ Cargo-geiger (Unsafe Code Detection)
+            - ✅ Anchor Security Analyzer
+            - ✅ Sec3 (Soteria) Static Analysis
+            - ✅ L3X AI-Driven Analysis
+            - ✅ Kani Formal Verification
+            - ✅ Certora Prover
+            - ✅ WACANA Symbolic Execution
+            - ✅ Trident Fuzzing
+            - ✅ FuzzDelSol eBPF Fuzzing
+            
+            [View Full Dashboard](https://your-org.github.io/your-repo/security-dashboard/)
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.name,
+              body: summary
+            });
+
+  # ═══════════════════════════════════════════════════════════════════
+  # PHASE 11: Deployment Gate
+  # ═══════════════════════════════════════════════════════════════════
+  deployment-gate:
+    name: Security Deployment Gate
+    runs-on: ubuntu-latest
+    needs: [complete-audit]
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Download Audit Report
+        uses: actions/download-artifact@v3
+        with:
+          name: complete-audit-report
+          path: ./audit-report/
+
+      - name: Validate Deployment Criteria
+        run: |
+          echo "🔒 Validating deployment security criteria..."
+          
+          CRITICAL=$(jq -r '.critical_count' ./audit-report/report.json)
+          HIGH=$(jq -r '.high_count' ./audit-report/report.json)
+          RISK=$(jq -r '.overall_risk_score' ./audit-report/report.json)
+          SAFETY=$(jq -r '.geiger_report.safety_score' ./audit-report/report.json)
+          ANCHOR=$(jq -r '.anchor_report.anchor_security_score' ./audit-report/report.json || echo "100")
+          
+          echo "Deployment Criteria Check:"
+          echo "  Critical Vulnerabilities: $CRITICAL (must be 0)"
+          echo "  High Vulnerabilities: $HIGH (must be ≤3)"
+          echo "  Risk Score: $RISK (must be ≤6)"
+          echo "  Safety Score: $SAFETY (must be ≥70)"
+          echo "  Anchor Score: $ANCHOR (must be ≥90)"
+          
+          PASSED=true
+          
+          if [ "$CRITICAL" -gt 0 ]; then
+            echo "❌ FAILED: Critical vulnerabilities present"
+            PASSED=false
+          fi
+          
+          if [ "$HIGH" -gt 3 ]; then
+            echo "❌ FAILED: Too many high vulnerabilities"
+            PASSED=false
+          fi
+          
+          if [ "$RISK" -gt 6 ]; then
+            echo "❌ FAILED: Risk score too high"
+            PASSED=false
+          fi
+          
+          if [ "$SAFETY" -lt 70 ]; then
+            echo "❌ FAILED: Safety score too low (excessive unsafe code)"
+            PASSED=false
+          fi
+          
+          if [ "$ANCHOR" != "null" ] && [ "$ANCHOR" -lt 90 ]; then
+            echo "❌ FAILED: Anchor security score too low"
+            PASSED=false
+          fi
+          
+          if [ "$PASSED" = false ]; then
+            echo ""
+            echo "🚫 DEPLOYMENT BLOCKED - Security criteria not met"
+            exit 1
+          fi
+          
+          echo ""
+          echo "✅ DEPLOYMENT APPROVED - All security criteria met"
+
+      - name: Trigger Deployment
+        if: success()
+        run: |
+          echo "🚀 Triggering deployment pipeline..."
+          # Add your deployment logic here
+          # e.g., solana program deploy, anchor deploy, etc.

@@ -1,0 +1,64 @@
+name: Quick Security Scan (PR Check)
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  quick-scan:
+    name: Quick Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Run Quick Audit (Geiger + Anchor + Sec3)
+        run: |
+          echo "⚡ Running quick security scan..."
+          cargo run -p orchestrator -- audit \
+            --repo . \
+            --geiger=true \
+            --anchor=true \
+            --sec3=true \
+            --l3x=false \
+            --wacana=false \
+            --trident=false \
+            --fuzzdelsol=false \
+            --prove=false \
+            --output-dir ./quick-scan
+
+      - name: Check Results
+        run: |
+          CRITICAL=$(jq -r '.critical_count' ./quick-scan/report.json)
+          if [ "$CRITICAL" -gt 0 ]; then
+            echo "❌ Critical vulnerabilities found"
+            exit 1
+          fi
+          echo "✓ Quick scan passed"
+
+      - name: Comment on PR
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('./quick-scan/report.json', 'utf8'));
+            const comment = `
+            ## ⚡ Quick Security Scan Results
+            
+            - 🔴 Critical: ${report.critical_count}
+            - 🟠 High: ${report.high_count}
+            - 🟡 Medium: ${report.medium_count}
+            
+            **Safety Score**: ${report.geiger_report?.safety_score || 'N/A'}/100
+            **Anchor Score**: ${report.anchor_report?.anchor_security_score || 'N/A'}/100
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.name,
+              body: comment
+            });

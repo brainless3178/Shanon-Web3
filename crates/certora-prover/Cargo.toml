@@ -1,0 +1,24 @@
+[package]
+name = "certora-prover"
+version.workspace = true
+edition.workspace = true
+description = "Certora Solana Prover integration for formal verification of SBF bytecode"
+license = "MIT"
+keywords = ["certora", "solana", "formal-verification", "sbf", "bytecode"]
+categories = ["development-tools", "cryptography"]
+
+[dependencies]
+syn = { version = "2.0", features = ["full", "extra-traits", "visit", "parsing"] }
+quote = "1.0"
+proc-macro2 = { version = "1.0", features = ["span-locations"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "1.0"
+walkdir = "2.4"
+tracing = "0.1"
+chrono = "0.4"
+regex = "1.10"
+tempfile = "3.10"
+goblin = "0.9"
+sha2 = "0.10"
+hex = "0.4"

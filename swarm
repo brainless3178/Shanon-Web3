@@ -1,0 +1,12 @@
+#!/bin/bash
+# Solana Security Swarm - Professional Entry Point
+
+# Ensure we are in the project root
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$SCRIPT_DIR"
+
+# Build quietly to ensure binary is fresh
+cargo build -q -p orchestrator --bin solana-security-swarm
+
+# Run the binary directly to avoid cargo's output noise
+./target/debug/solana-security-swarm "$@"

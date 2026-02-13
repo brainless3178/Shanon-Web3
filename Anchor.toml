@@ -1,0 +1,22 @@
+[toolchain]
+
+[features]
+resolution = true
+skip-lint = true
+
+[programs.devnet]
+vulnerable_vault = "47poGSxjXsErkcCrZqEJtomHrdxHtfAbpfYmx3xRndVJ"
+exploit_registry = "4cb3bZbBbXUxX6Ky4FFsEZEUBPe4TaRhvBEyuV9En6Zq"
+security_shield = "339CyvURLrdBDsVDgmpT3kp2AjU9owu2YHaKuGBANzgT"
+vulnerable_staking = "5SHwerLGrroioK2ebXMw7jay6E4nZeM4UE6UCAMbf86N"
+vulnerable_token = "A3bDLaT94gfA4Z4WgxpQeMfL59woY7RmR3VSja123SZV"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "Devnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
