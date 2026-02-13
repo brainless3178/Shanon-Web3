@@ -1,15 +1,10 @@
 {
     "version": 2,
-    "public": true,
-    "cleanUrls": true,
+    "public": false,
     "rewrites": [
         {
             "source": "/api/(.*)",
-            "destination": "https://shanon-web3-production.up.railway.app/api/$1"
-        },
-        {
-            "source": "/(.*)",
-            "destination": "/dashboard/$1"
+            "destination": "/api/$1"
         }
     ]
 }

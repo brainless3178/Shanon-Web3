@@ -1,6 +1,5 @@
 [build]
   publish = "dashboard"
-  command = "echo 'No build step required'"
 
 [[redirects]]
   from = "/api/*"
