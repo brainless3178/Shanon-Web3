@@ -1,57 +1,8 @@
 {
-    "version": 2,
-    "cleanUrls": true,
-    "redirects": [
-        {
-            "source": "/",
-            "destination": "/dashboard",
-            "status": 308
-        }
-    ],
     "rewrites": [
         {
-            "source": "/api/programs",
-            "destination": "/api/programs.js"
-        },
-        {
-            "source": "/api/findings",
-            "destination": "/api/findings.js"
-        },
-        {
-            "source": "/api/status",
-            "destination": "/api/status.js"
-        },
-        {
-            "source": "/api/warroom/analyze",
-            "destination": "/api/warroom/analyze.js"
-        },
-        {
-            "source": "/api/taint",
-            "destination": "/api/taint.js"
-        },
-        {
-            "source": "/api/formal-verification",
-            "destination": "/api/formal-verification.js"
-        },
-        {
-            "source": "/api/fuzzing",
-            "destination": "/api/fuzzing.js"
-        },
-        {
-            "source": "/api/audit",
-            "destination": "/api/audit.js"
-        },
-        {
-            "source": "/api/monitoring",
-            "destination": "/api/monitoring.js"
-        },
-        {
-            "source": "/api/reports",
-            "destination": "/api/reports.js"
-        },
-        {
-            "source": "/api/hello",
-            "destination": "/api/hello.js"
+            "source": "/",
+            "destination": "/dashboard/index.html"
         }
     ]
 }
