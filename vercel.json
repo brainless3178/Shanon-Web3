@@ -1,7 +1,5 @@
 {
     "version": 2,
-    "buildCommand": "",
-    "outputDirectory": ".",
     "framework": null,
     "cleanUrls": true,
     "redirects": [
@@ -12,10 +10,6 @@
         }
     ],
     "rewrites": [
-        {
-            "source": "/api/(.*)",
-            "destination": "/api/$1.js"
-        },
         {
             "source": "/dashboard",
             "destination": "/dashboard/index.html"

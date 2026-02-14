@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "Solana Security Audit Platform",
   "scripts": {
+    "build": "echo 'Static site - no build needed'",
     "lint:fix": "prettier */*.js \"*/**/*{.js,.ts}\" -w",
     "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check"
   },
